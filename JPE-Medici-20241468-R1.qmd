@@ -25,8 +25,8 @@ Some useful information up front:
 
 In assessing compliance with our [Data and Code Availability Policy](https://www.journals.uchicago.edu/journals/jpe/datapolicy), our reproducibility team has identified the following issues, which we ask you to address:
 
-1.  Data Editor's first point.
-2.  Data Editor's second point.
+1.  We will schedule a remote replication session.
+2.  There are a few small things to fix. Please resubmit and we take it from there.
 
 # General
 
