@@ -7,11 +7,11 @@ shift-share (Bartik) Rotemberg-weight diagnostics:
 - `ch_weak.ado` — Chernozhukov–Hansen weak-IV-robust confidence intervals
 - `btsls.ado`, `overid_chao.ado` — bias-corrected 2SLS / overidentification helpers
 
-**Source:** Goldsmith-Pinkham, Paul, Isaac Sorkin, and Henry Swift. 2020.
+Source: Goldsmith-Pinkham, Paul, Isaac Sorkin, and Henry Swift. 2020.
 "Bartik Instruments: What, When, Why, and How." *American Economic Review*
 110 (8): 2586–2624. Replication code, AEA Data and Code Repository.
 
-**License:** Modified BSD (BSD-3-Clause), which permits redistribution with the
+License: Modified BSD (BSD-3-Clause), which permits redistribution with the
 copyright/license notice retained — see `LICENSE_from_GoldsmithPinkham_etal.txt`
 (the original license file shipped with their package, authored by them, not by us).
 Copyright 2018 American Economic Association.

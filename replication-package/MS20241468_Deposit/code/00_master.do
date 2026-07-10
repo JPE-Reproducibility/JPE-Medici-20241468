@@ -43,7 +43,7 @@ set scheme s2color   // published figures use the legacy s2color scheme; Stata 1
 * 1. Paths
 *------------------------------------------------------------------------------*
 
-global root "/files/JPE-Medici-20241468/replication-package/MS20241468_Deposit"
+global root "set-this-to-the-replication-package-path"
 * (Set the path above to the local path of the replication package.)
 
 global code      "$root/code"
@@ -92,7 +92,7 @@ end
 * than halting the whole run.
 local packages ftools gtools reghdfe ivreghdfe ivreg2 ranktest outreg2 coefplot ///
                grc1leg2 weakivtest2 weakivtest avar distinct estout grstyle palettes colrspace fre egenmore ///
-               acreg spmap binscatter hdfe winsor2
+               acreg spmap binscatter hdfe winsor2 shp2dta geoinpoly
 foreach pkg of local packages {
     cap which `pkg'
     if _rc cap ssc install `pkg', replace
@@ -112,20 +112,20 @@ runstep "$code/1_construction/1a_reference_inputs.do"
 runstep "$code/1_construction/1b_merge_preadjust.do"
 runstep "$code/1_construction/1c_boundary_adjustment.do"
 runstep "$code/1_construction/1d_county_panel.do"
-*runstep "$code/1_construction/1e_weather_shocks.do"
-*runstep "$code/1_construction/1f_shiftshare.do"
+runstep "$code/1_construction/1e_weather_shocks.do"
+runstep "$code/1_construction/1f_shiftshare.do"
 runstep "$code/1_construction/1g_crowdout.do"
-*runstep "$code/1_construction/1h_final_dataset.do"
+runstep "$code/1_construction/1h_final_dataset.do"
 
 
 *------------------------------------------------------------------------------*
 * 4. Analysis — tables and figures
 *------------------------------------------------------------------------------*
 
-*runstep "$code/2_analysis/2a_sumstats.do"
+runstep "$code/2_analysis/2a_sumstats.do"
 runstep "$code/2_analysis/2b_figures_descriptives.do"
-*runstep "$code/2_analysis/2c_results_main.do"
-*runstep "$code/2_analysis/2d_results_extra.do"
+runstep "$code/2_analysis/2c_results_main.do"
+runstep "$code/2_analysis/2d_results_extra.do"
 runstep "$code/2_analysis/2e_results_robustness.do"
 runstep "$code/2_analysis/2f_rotemberg_weights.do"
 

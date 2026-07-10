@@ -390,7 +390,7 @@ replace members = 25 + ((nr_votes_delegates-1) * 50)	if state == "IN" & nr_votes
 
 *********** KS ***********
 
-*1920 (rules from 1920) -- NOT PROPORTIONAL
+*1920 (rules from 1920) -- not proportional
 replace members = .										if state == "KS"
 
 
@@ -398,7 +398,7 @@ replace members = .										if state == "KS"
 
 *********** KY ***********
 
-*1900 and 1911 (rules from 1911) -- NOT PROPORTIONAL
+*1900 and 1911 (rules from 1911) -- not proportional
 replace members = .										if state == "KY"
 
 
@@ -406,7 +406,7 @@ replace members = .										if state == "KY"
 
 *********** LA ***********
 
-*1920 and 1930 (rules from 1920 and 1930) -- NOT PROPORTIONAL
+*1920 and 1930 (rules from 1920 and 1930) -- not proportional
 replace members = .										if state == "LA"
 
 
@@ -423,7 +423,7 @@ replace members = nr_votes_delegates * 200				if state == "MA" & nr_votes_delega
 
 *********** MD and DC ***********
 
-*1910, 1922 and 1930 (rules from 1910) -- NOT PROPORTIONAL
+*1910, 1922 and 1930 (rules from 1910) -- not proportional
 replace members = .										if state == "MD" | state == "DC"
 
 
@@ -440,7 +440,7 @@ replace members = nr_votes_delegates * 100				if state == "ME" & nr_votes_delega
 
 *********** MI ***********
 
-*1910 (rules from 1910) -- NOT PROPORTIONAL
+*1910 (rules from 1910) -- not proportional
 replace members = .										if state == "MI" & year_orig == 1910
 
 
@@ -519,7 +519,7 @@ replace members = (nr_votes_delegates * 25)				if state == "NC" & nr_votes_deleg
 
 *********** ND ***********
 
-*1921 and 1930 (rules from 1921 and 1930) -- NOT PROPORTIONAL
+*1921 and 1930 (rules from 1921 and 1930) -- not proportional
 replace members = .										if state == "ND"
 
 
@@ -536,7 +536,7 @@ replace members = 100 * (nr_votes_delegates - 2)		if state == "NH" & nr_votes_de
 
 *********** NM ***********
 
-*1921 and 1930 (rules from 1921 and 1926) -- NOT PROPORTIONAL
+*1921 and 1930 (rules from 1921 and 1926) -- not proportional
 replace members = .										if state == "NM"
 
 
@@ -582,7 +582,7 @@ replace members = (nr_votes_delegates - 1) * 100		if state == "OR" & nr_votes_de
 
 *********** PA ***********
 
-*1902 -- NOT PROPORTIONAL (locals sent 1 delegate each; no info on representation rule is available)
+*1902 -- not proportional (locals sent 1 delegate each; no info on representation rule is available)
 replace members = .										if state == "PA" & year_orig == 1902
 
 
@@ -610,7 +610,7 @@ replace members = (nr_votes_delegates * 25)				if state == "SC" & nr_votes_deleg
 
 *********** TN ***********
 
-**1910, 1920 and 1931 -- NOT PROPORTIONAL
+**1910, 1920 and 1931 -- not proportional
 replace members = .										if state == "TN"
 
 

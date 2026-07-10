@@ -86,7 +86,7 @@ if r(max) >= 10000 {
 }
 
 * Origin = own country of birth only, over the entire male population. Per the paper's
-* Appendix (app:names_delegates), the birthplace mapping does NOT use the father's
+* Appendix (app:names_delegates), the birthplace mapping does not use the father's
 * birthplace -- that is the ancestry measure, constructed separately below. So U.S.-born
 * counts a man's own U.S. birth regardless of his father's birthplace.
 gen euro   = (inrange(bpl,400,465))

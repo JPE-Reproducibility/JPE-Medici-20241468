@@ -18,7 +18,7 @@
 *   $intmdata/US_county_1930_WGS84_dbase_spmap.dta    - spmap identifier key (1a)
 *   $data/county_panel_1880-1920_county1930.dta   - county panel with occupation cells (1d)
 *   $intmdata/xwalk_occ1950_occnames.dta              - OCC1950 occupation labels (1a)
-*   $rawlocal/Replication_Farber_et_al_2021/Data/wrkdata/unionshares.dta - Farber et al. (2021)
+*   $rawdata/Farber_et_al_2021/unionshares.dta - Farber et al. (2021) (included; see README 2.5)
 *
 * OUTPUTS:
 *   $figures/map_uniondens_1900-20.pdf  (three-panel 1900/1910/1920 map, combined)
@@ -38,7 +38,6 @@ set more off, perm
 if "$root" == "" global root "set-this-to-the-replication-package-path"
 global code     "$root/code"
 global rawdata  "$root/data/public"
-global rawlocal "$root/data/_raw_local"   // unshippable third-party POINTER data (obtain from source; excluded from deposit zip)
 global intmdata "$root/data/intermediate"
 global data     "$root/data/clean"
 global output   "$root/output"
@@ -356,7 +355,7 @@ graph export "$figures/datasources_locals_correlation.pdf", replace
 *        output corr_farberetal_mydata_balanced.pdf
 *------------------------------------------------------------------------------*
 
-use "$rawlocal/Replication_Farber_et_al_2021/Data/wrkdata/unionshares.dta", clear
+use "$rawdata/Farber_et_al_2021/unionshares.dta", clear
 keep if inrange(year,1937,1941)
 keep year dataset state ushare_state
 collapse (mean) ushare_state, by(state)

@@ -1,4 +1,4 @@
-# Replication Package — "Closing Ranks: Organized Labor and Immigration"
+# Data and Code for: Closing Ranks: Organized Labor and Immigration
 
 Carlo Medici. *Journal of Political Economy*, MS 20241468.
 
@@ -12,19 +12,21 @@ Standard (DCAS).
 
 The package has two stages.
 
-- **Runnable pipeline — `code/00_master.do`.** This is what a replicator runs. It
+- Runnable pipeline — `code/00_master.do`. This is what a replicator runs. It
   reads the shipped aggregates in `data/public/`, builds the analysis dataset, and
   produces every exhibit in the paper into `output/tables/` (`.xml`) and
-  `output/figures/` (`.pdf`). It requires no restricted or non-shipped data.
+  `output/figures/` (`.pdf`). It runs from the shipped aggregates in `data/public/`,
+  together with two small third-party replication files that are included under
+  `data/public/` (see §2.5).
 
-- **Build stage — `build_documentation/scripts/00_master_build.do` (author-only).** This documents
+- Build stage — `build_documentation/scripts/00_master_build.do` (author-only). This documents
   how the shipped aggregates in `data/public/` were produced from sources that
   cannot travel in the deposit (IPUMS complete-count microdata; the IPUMS restricted
   full-count *with surnames*; ICPSR studies). A replicator cannot run this stage
   without obtaining those sources and is not expected to; it is provided for
   transparency and for the authors to rebuild the aggregates.
 
-Expected total runtime of the runnable pipeline is ≈ 12.5 hours; see
+Expected total runtime of the runnable pipeline is ≈ 5.5 hours; see
 [`runtimes.md`](runtimes.md) for per-script timings, software, and hardware.
 
 ---
@@ -50,6 +52,8 @@ name-free aggregates derived from them are shipped (see §2.3).
   complete-count files; ICPSR studies) that are not redistributed here but are freely
   obtainable from IPUMS and ICPSR. See `data/extract_definitions/` for exact extract
   definitions and variable lists.
+- The runnable pipeline also reads two small third-party replication files (Sequeira
+  et al. 2020; Farber et al. 2021), included under `data/public/`; see §2.5.
 
 ### 2.3 Restricted data — IPUMS full count with surnames
 
@@ -78,7 +82,7 @@ source citation and a column glossary. Summary:
 | `cpi/` | Federal Reserve Bank of Minneapolis, CPI 1800– | yes | b7 |
 | `MPI_immflows/` | Migration Policy Institute tabulation of DHS *Yearbook of Immigration Statistics* | yes | — (read directly) |
 | `Willcox_1929/` | Willcox (1929), *International Migrations, Vol. I*, NBER | yes | — |
-| `Freeman_1998/` | Freeman (1998), "Spurts in Union Growth," NBER WP 6012 | yes | — |
+| `Freeman_1998/` | Freeman (1998), "Spurts in Union Growth," in The Defining Moment | yes | — |
 | `county_crosswalks/` | Ferrara, Testa & Zhou (2022), openICPSR 150101 V4 | yes (`.dta` + `.csv`) | b12; 1c, 1d |
 | `crosswalks/` | Identifier crosswalks (StateFIP↔ICP; 1900 county NHGIS↔ICP) | yes | 1a |
 | `IPUMS/` | IPUMS-derived crosswalks (OCC1950 labels; 1930 county↔SEA) | yes | 1a |
@@ -90,30 +94,72 @@ Full citations are in §8. Non-shipped sources used only by the build stage (IPU
 complete-count microdata; ICPSR 00001 elections; ICPSR 02896 Haines; ICPSR 00029
 KoL) are documented in `data/extract_definitions/`.
 
+### 2.5 Third-party inputs included in the package
+
+The runnable pipeline reads two files from other authors' replication materials. Both are included in this
+package under `data/public/`, with their sources and licenses below:
+
+- `Weather_Data.dta` — Sequeira, Nunn & Qian (2020). Used by `1e_weather_shocks.do`
+  to build a weather-based alternative instrument (a robustness check; the construction
+  step reads it). Included at `data/public/Sequeira_et_al_2020/Weather_Data.dta`;
+  sourced from the replication materials on Nathan Nunn's data page
+  (https://nathannunn.arts.ubc.ca/data/), and included with the written permission of
+  Nathan Nunn, who hosts the data, granted 8 July 2026 (co-authors Sandra Sequeira and
+  Nancy Qian were copied on the request). See that folder's `README.md`.
+- `unionshares.dta` — Farber, Herbst, Kuziemko & Naidu (2021). Used by
+  `2a_sumstats.do` for Figure H.1 only; the rest of the pipeline runs without it.
+  Included at `data/public/Farber_et_al_2021/unionshares.dta`; from openICPSR 179441
+  (https://doi.org/10.3886/E179441V1) or Harvard Dataverse
+  (https://doi.org/10.7910/DVN/QTDUQ0), distributed under CC BY 4.0 / CC0. See that
+  folder's `README.md`.
+
+### 2.6 Preservation and support
+
+The restricted IPUMS full-count microdata with surnames are accessed on the secure
+restricted-access server of the California Center for Population Research (CCPR) at
+UCLA, and remain obtainable from IPUMS under a restricted-use agreement. The author
+will preserve the code and the derived name-free data underlying this paper on the
+CCPR/UCLA secure server for at least five years following publication, and will provide
+reasonable assistance to those seeking to clarify or replicate the results.
+
+### 2.7 Dataset list
+
+The data files provided in the package are those under `data/public/`, organized by
+folder in §2.4; each folder's `README.md` lists its files and their columns.
+`data/intermediate/` and `data/clean/` ship empty and are regenerated by a run. The
+two third-party files (§2.5) are included under
+`data/public/Sequeira_et_al_2020/` and `data/public/Farber_et_al_2021/`.
+
 ---
 
 ## 3. Computational requirements
 
-- **Software:** Stata. Results were produced under **Stata 19.5**; `00_master.do`
+- Software: Stata. Results were produced under Stata 19.5; `00_master.do`
   sets `version 17` for syntax compatibility (it does not change numerical results).
   Point estimates and figures reproduce on any recent release; cluster-robust SEs and
   weak-IV F-statistics may differ in the last reported digit on releases other than 19.5.
-- **Stata packages** are installed from SSC at the top of each master file
+- Stata packages are installed from SSC at the top of each master file
   (`reghdfe`, `ivreghdfe`, `ivreg2`, `ranktest`, `weakivtest2`/`weakivtest`, `avar`,
   `distinct`, `gtools`/`ftools`, `outreg2`, `coefplot`, `estout`, `grc1leg2`,
   `spmap`, `geoinpoly`, `shp2dta`, and others). Third-party `.ado` files that are not
   on SSC are bundled in `code/ado/` (see `code/ado/README.md`). A live SSC connection
   is needed only on first run.
-- **Runtime / hardware:** see [`runtimes.md`](runtimes.md). The runnable pipeline
-  takes ≈ 12.5 hours on the reference machine, dominated by the boundary
-  harmonization (`1c`) and the shift-share/Rotemberg inference (`2e`, `2f`).
+- Runtime / hardware: see [`runtimes.md`](runtimes.md). The runnable pipeline
+  takes ≈ 5.5 hours on the reference machine, dominated by the boundary
+  harmonization (`1c`) and the robustness inference (`2e`).
+- Disk space: about 10 GB free. The package is roughly 5 GB, and a run generates a
+  further 4–5 GB of intermediate and clean datasets under `data/intermediate/` and
+  `data/clean/`.
+- Stata package versions: the non-SSC `.ado` files are bundled in `code/ado/`; the
+  versions of the SSC packages used for the published run are listed in
+  `code/ado/stata_packages.txt`.
 
 ---
 
 ## 4. Directory structure
 
 ```
-MS20241468_Deposit/
+JPE_Replication/
 ├── README.md                 ← this file
 ├── runtimes.md               ← computational requirements / runtimes
 ├── code/                     ← the replication package — run code/00_master.do
@@ -140,7 +186,7 @@ MS20241468_Deposit/
 
 ### 5.1 Runnable pipeline — `code/00_master.do`
 
-**Construction (`1_construction/`)** assembles the analysis dataset:
+Construction (`1_construction/`) assembles the analysis dataset:
 
 | script | role |
 |---|---|
@@ -153,7 +199,7 @@ MS20241468_Deposit/
 | `1g_crowdout` | crowd-out / labor-market competition measures |
 | `1h_final_dataset` | merge controls and CPI; produce `analysis_dataset_county1930.dta` |
 
-**Analysis (`2_analysis/`)** produces the exhibits. Each script's header lists its
+Analysis (`2_analysis/`) produces the exhibits. Each script's header lists its
 exact output files; the output filenames are self-describing.
 
 | script | produces |
@@ -180,15 +226,15 @@ the union aggregates; `b15` the by-origin series; `b16` ships the aggregates int
 
 ## 6. Instructions to replicators
 
-1. **Obtain the data.** Everything needed to run `00_master.do` is already in
-   `data/public/`. Nothing else is required for the runnable pipeline. (Only the
-   author-only build stage needs the non-shipped microdata in §2.)
-2. **Set the path.** Open `code/00_master.do` and set `global root` (near the top) to
+1. Data. Everything the runnable pipeline needs is included under `data/public/`,
+   including the two third-party replication files described in §2.5; nothing needs to
+   be obtained separately.
+2. Set the path. Open `code/00_master.do` and set `global root` (near the top) to
    the local path of this package.
-3. **Run** `code/00_master.do` in Stata 19.5. On first run, leave an SSC connection
+3. Run `code/00_master.do` in Stata 19.5. On first run, leave an SSC connection
    available so the dependency installer can fetch any missing packages. Expect
-   ≈ 12.5 hours (see `runtimes.md`).
-4. **Outputs** are written to `output/tables/` (`.xml`, pasted into the manuscript)
+   ≈ 5.5 hours (see `runtimes.md`).
+4. Outputs are written to `output/tables/` (`.xml`, pasted into the manuscript)
    and `output/figures/` (`.pdf`), and a full run log to `output/logs/00_master.log`.
 
 The build stage and the analysis scripts can also each be run standalone: every
@@ -208,12 +254,19 @@ script sets `$root` itself if the master has not, so set that one line and run.
 
 - Day, David T. 1892. *Report on Mineral Industries in the United States at the
   Eleventh Census, 1890.* Vol. 14. Norman Ross Pub.
+- Farber, Henry S., Daniel Herbst, Ilyana Kuziemko, and Suresh Naidu. 2021. "Unions
+  and Inequality over the Twentieth Century: New Evidence from Survey Data."
+  *Quarterly Journal of Economics* 136(3): 1325–1385. Replication data: openICPSR
+  179441, https://doi.org/10.3886/E179441V1; Harvard Dataverse,
+  https://doi.org/10.7910/DVN/QTDUQ0.
 - Ferrara, Andreas, Patrick A. Testa, and Liyang Zhou. 2022. *New Area- and
   Population-based Geographic Crosswalks for U.S. Counties and Congressional
   Districts, 1790–2020.* Ann Arbor, MI: ICPSR [distributor]. openICPSR 150101, V4.
   https://doi.org/10.3886/E150101V4
 - Freeman, Richard B. 1998. "Spurts in Union Growth: Defining Moments and Social
-  Processes." NBER Working Paper 6012. https://doi.org/10.3386/w6012
+  Processes." In The Defining Moment: The Great Depression and the American Economy,
+  edited by Michael D. Bordo, Claudia Goldin, and Eugene N. White. Chicago: University
+  of Chicago Press.
 - Garlock, Jonathan. 2009. *Knights of Labor Assemblies, 1879–1889 (ICPSR 29).*
   Inter-University Consortium for Political and Social Research [distributor].
 - Gregory, James N. 2015. *IWW History Project.* http://depts.washington.edu/iww/
@@ -226,11 +279,64 @@ script sets `$root` itself if the master has not, so set that one line and run.
   Office of Homeland Security Statistics, *Yearbook of Immigration Statistics, 2023.*
   https://ohss.dhs.gov/topics/immigration/yearbook
 - IPUMS NHGIS, University of Minnesota. 1930 U.S. county boundary file.
-- Ruggles, Steven, et al. 2022. *IPUMS USA / IPUMS Full Count Data: Version 3.0
+- Ruggles, Steven, et al. 2021. *IPUMS Full Count Data: Version 3.0
   [dataset].* Minneapolis, MN: IPUMS.
+- Sequeira, Sandra, Nathan Nunn, and Nancy Qian. 2020. "Immigrants and the Making of
+  America." *Review of Economic Studies* 87(1): 382–419. Replication files via Nathan
+  Nunn's data page, https://nathannunn.arts.ubc.ca/data/.
 - Willcox, Walter F. 1929. "Statistics of Migrations, National Tables, United
   States." In *International Migrations, Volume I: Statistics.* NBER.
 
 See each `data/public/<folder>/README.md` and `data/extract_definitions/README.md`
 for source-level detail. For the substantive description of the union data, see the
 paper's Data section, "Dataset on Union Presence and Membership."
+
+---
+
+## 9. List of exhibits and the programs that produce them
+
+Each analysis script's header also names its outputs. Output tables are `.xml`
+(`outreg2`), figures are `.pdf`, under `output/tables/` and `output/figures/`.
+
+| Exhibit | Program | Output file(s) |
+|---|---|---|
+| Figure 1 | `2b_figures_descriptives.do` | `trends_unions_immigrants.pdf` |
+| Figure 2 | `2a_sumstats.do` | `map_uniondens_1900-20.pdf` |
+| Figure 3 | `2e_results_robustness.do` | `rob_summary.pdf` |
+| Figure 4 | `2e_results_robustness.do` | `rob_controls.pdf` |
+| Figure 5 | `2a_sumstats.do` | `occs_nat_euroimm_1900-1920.pdf` |
+| Table 1 | `2a_sumstats.do` | `sumstats.xml` |
+| Table 2 | `2c_results_main.do` | `firststage.xml` |
+| Table 3 | `2c_results_main.do` | `baseline_ols.xml`, `baseline_redform.xml`, `baseline_2sls.xml` |
+| Table 4 | `2c_results_main.do` | `intextmargin_all.xml` |
+| Table 5 | `2c_results_main.do` | `byskill_sk.xml`, `byskill_unsk.xml` |
+| Table 6 | `2c_results_main.do` | `het_crowdout_sk.xml`, `het_crowdout_unsk.xml` |
+| Table 7 | `2c_results_main.do` | `byorigin_all.xml` |
+| Table 8 | `2c_results_main.do` | `het_knownotshare_all.xml`, `het_residsegr_all.xml` |
+| Figure A.1 | `2b_figures_descriptives.do` | `immigrmix_1850-1920.pdf` |
+| Figure A.4 | `2a_sumstats.do` | `datasources_locals_correlation.pdf`, `datasources_memb_correlation.pdf` |
+| Figure A.5 | `2c_results_main.do` | `share_deleg.pdf` |
+| Table A.2 | `2a_sumstats.do` | `corr_euroimm1890.xml` |
+| Table A.3 | `2a_sumstats.do` | `immflow_unionstrength.xml` |
+| Table A.4 | `2d_results_extra.do` | `controlfunction.xml` |
+| Table A.5 | `2c_results_main.do` | `het_crowdout_all.xml` |
+| Table A.6 | `2c_results_main.do` | `het_knownotshare_all_alt.xml`, `het_residsegr_all_alt.xml` |
+| Table A.7 | `2c_results_main.do` | `share_deleg_{anc,bpl}_{full,restr}sample.xml` |
+| Table A.8 | `2d_results_extra.do` | `het_unionseurope_all.xml` |
+| Table A.9 | `2d_results_extra.do` | `het_socparteurope10_all.xml`, `het_socparteurope20_all.xml` |
+| Table A.10 | `2d_results_extra.do` | `het_KOL.xml`, `het_IWW.xml` |
+| Table A.11 | `2d_results_extra.do` | `economic_outcomes.xml` |
+| Figure B.1 | `1e_weather_shocks.do` | `corr_logimm_tempshock.pdf` (needs the Sequeira file, §2.5) |
+| Figure B.2 | `2e_results_robustness.do` | `rob_initstock.pdf` |
+| Table B.1 | `2e_results_robustness.do` | `rob_weathershocks_firststage.xml` |
+| Table B.2 | `2e_results_robustness.do` | `rob_pretrends_euro.xml` |
+| Figure G.1 | `2f_rotemberg_weights.do` | `rotemberg_weights.pdf` |
+| Table G.1 | `2f_rotemberg_weights.do` | `rotemberg_summary.tex` |
+| Table G.2 | `2e_results_robustness.do` | `rob_pretrends_{aus_hung,italy,russia,gr_pt_es,sweden}.xml` |
+| Figure H.1 | `2a_sumstats.do` | `corr_farberetal_mydata_balanced.pdf` (needs the Farber file, §2.5) |
+
+A few appendix exhibits are hand-assembled reference material or scanned source
+documents and are not produced by the analysis code: Table A.1 (list of origin
+countries in the shift-share), Figures A.2 and A.3 (example digitized source
+documents), and the country-level reference tables in Appendices E and F (Table E.1,
+Table F.1).

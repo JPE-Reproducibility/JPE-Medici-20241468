@@ -24,7 +24,7 @@ Windows Server 2022 Standard (Version 21H2), 64-bit operating system, Intel(R) X
 
 ## Runnable pipeline — `00_master.do`
 
-Total wall time on the reference run: ≈ 12.5 hours.
+Total wall time on the reference run: ≈ 5.5 hours.
 
 | step | script | approx. runtime |
 |---|---|---|
@@ -36,7 +36,7 @@ Total wall time on the reference run: ≈ 12.5 hours.
 | 2c | main results | ~19 min |
 | 2d | extra results | ~1 min |
 | 2e | robustness | ~2h 20m |
-| 2f | Rotemberg weights | ~7h |
+| 2f | Rotemberg weights | ~23 min |
 
 Build-stage timings (the author-only `00_master_build.do`) are documented in
 `build_documentation/README.md`.

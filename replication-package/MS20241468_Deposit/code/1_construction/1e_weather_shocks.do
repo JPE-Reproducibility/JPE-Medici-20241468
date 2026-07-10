@@ -23,7 +23,7 @@
 *
 * INPUTS:
 *   $rawdata/Willcox_1929/willcox_immigration_bycountry.csv
-*   $rawlocal/Replication_Sequeira_et_al_2020/Weather_Data.dta  (unshipped pointer data; see README)
+*   $rawdata/Sequeira_et_al_2020/Weather_Data.dta  (third-party input, included; see README 2.5)
 *
 * OUTPUT (in $intmdata/):
 *   predicted_flows_weather.dta  - country-year predicted weather-driven
@@ -37,7 +37,6 @@ set more off, perm
 
 if "$root" == "" global root "set-this-to-the-replication-package-path"
 global rawdata  "$root/data/public"
-global rawlocal "$root/data/_raw_local"   // unshippable third-party POINTER data (obtain from source; excluded from deposit zip)
 global intmdata "$root/data/intermediate"
 global figures  "$root/output/figures"
 cap mkdir "$intmdata"
@@ -75,7 +74,7 @@ save `willcox_flows', replace
 * Winter=13).
 *------------------------------------------------------------------------------*
 
-use "$rawlocal/Replication_Sequeira_et_al_2020/Weather_Data.dta", clear
+use "$rawdata/Sequeira_et_al_2020/Weather_Data.dta", clear
 
 sort year country
 keep if country == "Austria" | country == "Belgium" | ///
