@@ -1,0 +1,587 @@
+----------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/output/logs/00_master.log
+  log type:  text
+ opened on:  17 Jul 2026, 12:51:00
+
+. 
+. capture program drop runstep
+
+. program define runstep
+  1.     di as result _n(2) "{hline 78}" _n `"[`=c(current_date)' `=c(current_time)'] running `0'"' _n "{hline 78}"
+  2.     do `0'
+  3. end
+
+. 
+. 
+. *------------------------------------------------------------------------------*
+. * 2. Package dependencies — install if missing
+. *------------------------------------------------------------------------------*
+. 
+. * SSC packages used by the runnable pipeline. ivreg2/ranktest are dependencies
+. * of ivreghdfe; grc1leg2 (combined-legend graphs) and weakivtest2 (Lewis-Mertens
+. * effective F) are used in 2_analysis; weakivtest2 in turn calls weakivtest, which
+. * requires avar. `cap` on the install so a single unavailable package warns rather
+. * than halting the whole run.
+. local packages ftools gtools reghdfe ivreghdfe ivreg2 ranktest outreg2 coefplot ///
+>                grc1leg2 weakivtest2 weakivtest avar distinct estout grstyle palettes colrspace fre egenmore ///
+>                acreg spmap binscatter hdfe winsor2 shp2dta geoinpoly
+
+. foreach pkg of local packages {
+  2.     cap which `pkg'
+  3.     if _rc cap ssc install `pkg', replace
+  4. }
+
+. cap reghdfe, compile    // compile reghdfe's Mata library
+
+. 
+. 
+. *------------------------------------------------------------------------------*
+. * 3. Construction — assemble the analysis dataset
+. *------------------------------------------------------------------------------*
+. 
+. * The census, elections, and by-origin county/national aggregates that
+. * 1b_merge_preadjust merges are built offline by the build_documentation/ stage and ship
+. * under data/public/census_aggregates/ (and data/public/foreignborn_byorigin/);
+. * this pipeline reads them, it does not rebuild them.
+. runstep "$code/1_construction/1a_reference_inputs.do"
+
+
+------------------------------------------------------------------------------
+[17 Jul 2026 12:51:08] running "/files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/code/1_construction/
+> 1a_reference_inputs.do"
+------------------------------------------------------------------------------
+
+. *==============================================================================*
+. * 1a_reference_inputs.do
+. *
+. * Imports small reference datasets used across the analysis: the 1930 county
+. * shapefile, IPUMS OCC1950 occupation labels, 1930 State Economic Area (SEA)
+. * identifiers, the StateFIP-StateICP crosswalk, 1900 NHGIS county identifiers,
+. * annual U.S. immigration flows, and historical union membership.
+. *
+. * INPUTS  (in $rawdata/):
+. *   USmap_1930/US_county_1930_WGS84.shp        - 1930 county boundaries (NHGIS)
+. *   IPUMS/xwalk_occ1950_occnames.csv           - IPUMS OCC1950 occupation labels
+. *   IPUMS/xwalk_1930_countynhg_SEA.csv         - IPUMS county-to-SEA crosswalk
+. *   MPI_immflows/flows_imm_1820-2021.csv       - Migration Policy Institute
+. *   Freeman_1998/uniondensity_freeman1998.csv  - Freeman (1998), NBER WP
+. *   crosswalks/xwalk_statefip_stateicp.csv     - StateFIP-to-StateICP crosswalk
+. *   crosswalks/xwalk_1900_countynhg_countyicp.csv  - 1900 county NHGIS-id lookup
+. *   foreignborn_byorigin/ustotals_byorigin_1850-1920.csv  - foreign-born by region
+. *
+. * OUTPUTS:
+. *   $intmdata/US_county_1930_WGS84_dbase.dta
+. *   $intmdata/US_county_1930_WGS84_coord.dta
+. *   $intmdata/US_county_1930_WGS84_dbase_spmap.dta
+. *   $intmdata/xwalk_occ1950_occnames.dta
+. *   $intmdata/xwalk_1930_countynhg_SEA.dta
+. *   $intmdata/xwalk_statefip_stateicp.dta
+. *   $intmdata/xwalk_1900_countynhg_countyicp.dta
+. *   $data/flows_imm_1820-2021.dta
+. *   $data/uniondensity_freeman1998.dta
+. *   $intmdata/ustotals_byorigin_1850-1920.dta
+. *
+. * Run via 00_master.do, or standalone.
+. *==============================================================================*
+. 
+. clear all
+java.lang.NoClassDefFoundError: Could not initialize class java.awt.Toolkit
+        at java.desktop/java.awt.EventQueue.invokeLater(EventQueue.java:1316)
+        at com.stata.Javacall.closeAllWindow(Javacall.java:214)
+        at com.stata.Javacall.discard(Javacall.java:48)
+Caused by: java.lang.ExceptionInInitializerError: Exception java.lang.UnsatisfiedLinkError: /usr/local/statanow19/util
+> ities/java/linux-x64/zulu-jdk21.0.7/lib/libawt_xawt.so: libXtst.so.6: cannot open shared object file: No such file o
+> r directory [in thread "main"]
+        at java.base/jdk.internal.loader.NativeLibraries.load(Native Method)
+        at java.base/jdk.internal.loader.NativeLibraries$NativeLibraryImpl.open(NativeLibraries.java:331)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:197)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:139)
+        at java.base/java.lang.ClassLoader.loadLibrary(ClassLoader.java:2418)
+        at java.base/java.lang.Runtime.load0(Runtime.java:852)
+        at java.base/java.lang.System.load(System.java:2025)
+        at java.base/jdk.internal.loader.NativeLibraries.load(Native Method)
+        at java.base/jdk.internal.loader.NativeLibraries$NativeLibraryImpl.open(NativeLibraries.java:331)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:197)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:139)
+        at java.base/jdk.internal.loader.NativeLibraries.findFromPaths(NativeLibraries.java:259)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:249)
+        at java.base/java.lang.ClassLoader.loadLibrary(ClassLoader.java:2427)
+        at java.base/java.lang.Runtime.loadLibrary0(Runtime.java:916)
+        at java.base/java.lang.System.loadLibrary(System.java:2063)
+        at java.desktop/java.awt.Toolkit$2.run(Toolkit.java:1384)
+        at java.desktop/java.awt.Toolkit$2.run(Toolkit.java:1382)
+        at java.base/java.security.AccessController.doPrivileged(AccessController.java:319)
+        at java.desktop/java.awt.Toolkit.loadLibraries(Toolkit.java:1381)
+        at java.desktop/java.awt.Toolkit.initStatic(Toolkit.java:1419)
+        at java.desktop/java.awt.Toolkit.<clinit>(Toolkit.java:1393)
+        ... 3 more
+a Java runtime exception occurred
+
+. set more off, perm
+(set more preference recorded)
+
+. 
+. * Project root. 00_master.do sets \$root for the full run; the line below also
+. * lets this file run on its own -- set it to the local path of the package.
+. if "$root" == "" global root "set-this-to-the-replication-package-path"
+
+. global rawdata  "$root/data/public"
+
+. global intmdata "$root/data/intermediate"
+
+. global data     "$root/data/clean"
+
+. cap mkdir "$intmdata"
+
+. cap mkdir "$data"
+
+. 
+. 
+. *------------------------------------------------------------------------------*
+. * County shapefile - 1930 boundaries (WGS84)
+. *
+. * shp2dta splits the shapefile into the database + coordinate .dta pair that
+. * geoinpoly and spmap consume downstream. GISJOIN2 (the NHGIS GISJOIN string
+. * with its "G" prefix removed) is the numeric county ID, already present in
+. * the 1930 NHGIS file; countynhg_1930 is its numeric form, the key used to
+. * merge county data downstream.
+. *------------------------------------------------------------------------------*
+. 
+. clear all
+java.lang.NoClassDefFoundError: Could not initialize class java.awt.Toolkit
+        at java.desktop/java.awt.EventQueue.invokeLater(EventQueue.java:1316)
+        at com.stata.Javacall.closeAllWindow(Javacall.java:214)
+        at com.stata.Javacall.discard(Javacall.java:48)
+Caused by: java.lang.ExceptionInInitializerError: Exception java.lang.UnsatisfiedLinkError: /usr/local/statanow19/util
+> ities/java/linux-x64/zulu-jdk21.0.7/lib/libawt_xawt.so: libXtst.so.6: cannot open shared object file: No such file o
+> r directory [in thread "main"]
+        at java.base/jdk.internal.loader.NativeLibraries.load(Native Method)
+        at java.base/jdk.internal.loader.NativeLibraries$NativeLibraryImpl.open(NativeLibraries.java:331)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:197)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:139)
+        at java.base/java.lang.ClassLoader.loadLibrary(ClassLoader.java:2418)
+        at java.base/java.lang.Runtime.load0(Runtime.java:852)
+        at java.base/java.lang.System.load(System.java:2025)
+        at java.base/jdk.internal.loader.NativeLibraries.load(Native Method)
+        at java.base/jdk.internal.loader.NativeLibraries$NativeLibraryImpl.open(NativeLibraries.java:331)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:197)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:139)
+        at java.base/jdk.internal.loader.NativeLibraries.findFromPaths(NativeLibraries.java:259)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:249)
+        at java.base/java.lang.ClassLoader.loadLibrary(ClassLoader.java:2427)
+        at java.base/java.lang.Runtime.loadLibrary0(Runtime.java:916)
+        at java.base/java.lang.System.loadLibrary(System.java:2063)
+        at java.desktop/java.awt.Toolkit$2.run(Toolkit.java:1384)
+        at java.desktop/java.awt.Toolkit$2.run(Toolkit.java:1382)
+        at java.base/java.security.AccessController.doPrivileged(AccessController.java:319)
+        at java.desktop/java.awt.Toolkit.loadLibraries(Toolkit.java:1381)
+        at java.desktop/java.awt.Toolkit.initStatic(Toolkit.java:1419)
+        at java.desktop/java.awt.Toolkit.<clinit>(Toolkit.java:1393)
+        ... 3 more
+a Java runtime exception occurred
+
+. shp2dta using "$rawdata/USmap_1930/US_county_1930_WGS84.shp", database("$intmdata/US_county_1930_WGS84_dbase") coord
+> inates("$intmdata/US_county_1930_WGS84_coord") replace
+type: 5
+
+. 
+. use "$intmdata/US_county_1930_WGS84_dbase", clear
+
+. gen countynhg_1930 = real(GISJOIN2)
+
+. save "$intmdata/US_county_1930_WGS84_dbase_spmap.dta", replace
+file
+    /files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/data/intermediate/US_county_1930_WGS84_dbase_s
+    > pmap.dta saved
+
+. 
+. 
+. *------------------------------------------------------------------------------*
+. * IPUMS OCC1950 occupation names
+. *------------------------------------------------------------------------------*
+. 
+. import delimited using "$rawdata/IPUMS/xwalk_occ1950_occnames.csv", clear
+(encoding automatically selected: ISO-8859-1)
+(2 vars, 283 obs)
+
+. save "$intmdata/xwalk_occ1950_occnames.dta", replace
+file /files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/data/intermediate/xwalk_occ1950_occnames.dta
+    saved
+
+. 
+. 
+. *------------------------------------------------------------------------------*
+. * 1930 State Economic Area (SEA) identifiers
+. *------------------------------------------------------------------------------*
+. 
+. import delimited using "$rawdata/IPUMS/xwalk_1930_countynhg_SEA.csv", clear
+(encoding automatically selected: ISO-8859-2)
+(3 vars, 3,100 obs)
+
+. rename countynhg countynhg_1930
+
+. save "$intmdata/xwalk_1930_countynhg_SEA.dta", replace
+file
+    /files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/data/intermediate/xwalk_1930_countynhg_SEA.dta
+    saved
+
+. 
+. 
+. *------------------------------------------------------------------------------*
+. * StateFIP <-> StateICP crosswalk
+. *------------------------------------------------------------------------------*
+. 
+. import delimited "$rawdata/crosswalks/xwalk_statefip_stateicp.csv", clear
+(encoding automatically selected: ISO-8859-1)
+(4 vars, 51 obs)
+
+. save "$intmdata/xwalk_statefip_stateicp.dta", replace
+file /files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/data/intermediate/xwalk_statefip_stateicp.dta
+    saved
+
+. 
+. 
+. *------------------------------------------------------------------------------*
+. * 1900 NHGIS county identifiers
+. *
+. * The 1900 full count carries no NHGIS county identifier (countynhg). This
+. * county lookup -- one row per county, keyed on year/stateicp/countyicp -- was
+. * built offline from the IPUMS 1900 5% sample (which does carry countynhg) and
+. * is shipped ready-made; 1b_merge_preadjust merges it onto the 1900 panel.
+. *------------------------------------------------------------------------------*
+. 
+. import delimited "$rawdata/crosswalks/xwalk_1900_countynhg_countyicp.csv", clear
+(encoding automatically selected: ISO-8859-1)
+(5 vars, 2,819 obs)
+
+. save "$intmdata/xwalk_1900_countynhg_countyicp.dta", replace
+file
+    /files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/data/intermediate/xwalk_1900_countynhg_countyi
+    > cp.dta saved
+
+. 
+. 
+. *------------------------------------------------------------------------------*
+. * Annual U.S. immigration flows, 1820-2021 (Migration Policy Institute)
+. *------------------------------------------------------------------------------*
+. 
+. import delimited "$rawdata/MPI_immflows/flows_imm_1820-2021.csv", clear
+(encoding automatically selected: ISO-8859-9)
+(2 vars, 202 obs)
+
+. save "$data/flows_imm_1820-2021.dta", replace
+file /files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/data/clean/flows_imm_1820-2021.dta saved
+
+. 
+. 
+. *------------------------------------------------------------------------------*
+. * Union membership over time (Freeman 1998)
+. *------------------------------------------------------------------------------*
+. 
+. import delimited "$rawdata/Freeman_1998/uniondensity_freeman1998.csv", clear
+(encoding automatically selected: ISO-8859-1)
+(4 vars, 116 obs)
+
+. save "$data/uniondensity_freeman1998.dta", replace
+file /files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/data/clean/uniondensity_freeman1998.dta saved
+
+. 
+. 
+. *------------------------------------------------------------------------------*
+. * US foreign-born population by region of origin, 1850-1920
+. *
+. * Eight census-year rows of full-population counts (see
+. * data/public/foreignborn_byorigin/README.md for column definitions and source).
+. * The CSV stores three regions; the fourth, "other", is the residual so the
+. * origin regions add up to foreignborn by construction rather than by hand.
+. * Feeds 2b_figures_descriptives.do (Figure A.1, immigrmix_1850-1920.pdf).
+. *------------------------------------------------------------------------------*
+. 
+. import delimited "$rawdata/foreignborn_byorigin/ustotals_byorigin_1850-1920.csv", clear
+(encoding automatically selected: ISO-8859-1)
+(6 vars, 8 obs)
+
+. 
+. assert _N == 8
+
+. assert !missing(year, totpop, foreignborn, canada_australia, northwest_europe, southeast_europe)
+
+. * origin regions cannot exceed the foreign-born total (guards the residual below)
+. assert canada_australia + northwest_europe + southeast_europe <= foreignborn
+
+. 
+. gen double other = foreignborn - canada_australia - northwest_europe - southeast_europe
+
+. 
+. label var year             "census year"
+
+. label var totpop           "total US population"
+
+. label var foreignborn      "total foreign-born population"
+
+. label var canada_australia "foreign-born, Canada + Australia"
+
+. label var northwest_europe "foreign-born, Northwest Europe"
+
+. label var southeast_europe "foreign-born, Southeast Europe"
+
+. label var other            "foreign-born, other origins (residual)"
+
+. 
+. order year totpop foreignborn canada_australia northwest_europe southeast_europe other
+
+. sort year
+
+. save "$intmdata/ustotals_byorigin_1850-1920.dta", replace
+file
+    /files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/data/intermediate/ustotals_byorigin_1850-1920.
+    > dta saved
+
+. 
+. 
+. *==============================================================================*
+. * IWW and KoL county inputs -> .dta intermediates
+. *
+. * Converts the shipped county-year IWW and KoL union CSVs into the .dta
+. * intermediates used downstream when the analysis dataset is assembled.
+. *   IN  ($rawdata/unions/): IWW_unions_county1930.csv, KoL_unions_county1930.csv
+. *   OUT ($intmdata/):       IWW_unions_1906-1917_county1930.dta,
+. *                           KOL_locals_1880-1890_county1930.dta
+. *==============================================================================*
+. 
+. clear all
+java.lang.NoClassDefFoundError: Could not initialize class java.awt.Toolkit
+        at java.desktop/java.awt.EventQueue.invokeLater(EventQueue.java:1316)
+        at com.stata.Javacall.closeAllWindow(Javacall.java:214)
+        at com.stata.Javacall.discard(Javacall.java:48)
+Caused by: java.lang.ExceptionInInitializerError: Exception java.lang.UnsatisfiedLinkError: /usr/local/statanow19/util
+> ities/java/linux-x64/zulu-jdk21.0.7/lib/libawt_xawt.so: libXtst.so.6: cannot open shared object file: No such file o
+> r directory [in thread "main"]
+        at java.base/jdk.internal.loader.NativeLibraries.load(Native Method)
+        at java.base/jdk.internal.loader.NativeLibraries$NativeLibraryImpl.open(NativeLibraries.java:331)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:197)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:139)
+        at java.base/java.lang.ClassLoader.loadLibrary(ClassLoader.java:2418)
+        at java.base/java.lang.Runtime.load0(Runtime.java:852)
+        at java.base/java.lang.System.load(System.java:2025)
+        at java.base/jdk.internal.loader.NativeLibraries.load(Native Method)
+        at java.base/jdk.internal.loader.NativeLibraries$NativeLibraryImpl.open(NativeLibraries.java:331)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:197)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:139)
+        at java.base/jdk.internal.loader.NativeLibraries.findFromPaths(NativeLibraries.java:259)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:249)
+        at java.base/java.lang.ClassLoader.loadLibrary(ClassLoader.java:2427)
+        at java.base/java.lang.Runtime.loadLibrary0(Runtime.java:916)
+        at java.base/java.lang.System.loadLibrary(System.java:2063)
+        at java.desktop/java.awt.Toolkit$2.run(Toolkit.java:1384)
+        at java.desktop/java.awt.Toolkit$2.run(Toolkit.java:1382)
+        at java.base/java.security.AccessController.doPrivileged(AccessController.java:319)
+        at java.desktop/java.awt.Toolkit.loadLibraries(Toolkit.java:1381)
+        at java.desktop/java.awt.Toolkit.initStatic(Toolkit.java:1419)
+        at java.desktop/java.awt.Toolkit.<clinit>(Toolkit.java:1393)
+        ... 3 more
+a Java runtime exception occurred
+
+. set more off, perm
+(set more preference recorded)
+
+. 
+. if "$root" == "" global root "set-this-to-the-replication-package-path"
+
+. global rawdata  "$root/data/public"
+
+. global intmdata "$root/data/intermediate"
+
+. cap mkdir "$intmdata"
+
+. 
+. 
+. *------------------------------------------------------------------------------*
+. * IWW: county-year locals counts, 1906-1917
+. *------------------------------------------------------------------------------*
+. 
+. import delimited "$rawdata/unions/IWW_unions_county1930.csv", clear varnames(1) stringcols(1) case(preserve)
+(encoding automatically selected: UTF-8)
+(3 vars, 218 obs)
+
+. 
+. label data "IWW county-year locals counts (1906-1917)"
+
+. label var gisjoin_1930   "GISJOIN, 1930 county boundaries"
+
+. label var countynhg_1930 "NHGIS county code, 1930 boundaries"
+
+. label var IWW_locals     "Number of IWW locals in county across 1906-1917"
+
+. 
+. save "$intmdata/IWW_unions_1906-1917_county1930.dta", replace
+file
+    /files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/data/intermediate/IWW_unions_1906-1917_county1
+    > 930.dta saved
+
+. 
+. 
+. *------------------------------------------------------------------------------*
+. * KoL: county-year locals counts, 1880 and 1890
+. *------------------------------------------------------------------------------*
+. 
+. import delimited "$rawdata/unions/KoL_unions_county1930.csv", clear varnames(1) stringcols(2) case(preserve)
+(encoding automatically selected: UTF-8)
+(4 vars, 1,387 obs)
+
+. 
+. label data "Knights of Labor county-year locals counts (1880, 1890)"
+
+. label var year           "Year"
+
+. label var gisjoin_1930   "GISJOIN, 1930 county boundaries"
+
+. label var countynhg_1930 "NHGIS county code, 1930 boundaries"
+
+. label var locals_kol     "Number of Knights of Labor locals in county-year"
+
+. 
+. save "$intmdata/KOL_locals_1880-1890_county1930.dta", replace
+file
+    /files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/data/intermediate/KOL_locals_1880-1890_county1
+    > 930.dta saved
+
+. 
+end of do-file
+
+. runstep "$code/1_construction/1b_merge_preadjust.do"
+
+
+------------------------------------------------------------------------------
+[17 Jul 2026 12:51:10] running "/files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/code/1_construction/
+> 1b_merge_preadjust.do"
+------------------------------------------------------------------------------
+
+. *==============================================================================*
+. * 1b_merge_preadjust.do
+. *
+. * Merges the per-year component datasets built by 1a and the build stage into one
+. * county dataset per census year, ahead of the county-border harmonization
+. * in 1c. The panel is assembled in two blocks because the base data differ:
+. *   - 1880, 1900, 1910, 1920: IPUMS full-count census aggregates;
+. *   - 1890: ICPSR 2896 county aggregates (the 1890 full count was destroyed
+. *     by fire).
+. *
+. * INPUTS (in $intmdata/): the per-year intermediate datasets written by
+. *   1a and the build stage -- IPUMS labor-market, population, immigrant, occupation and
+. *   industry aggregates; the 1890 ICPSR aggregates; the manufacturing,
+. *   agricultural, and mining censuses; residential-segregation counts;
+. *   election results; the 1900 NHGIS county-identifier lookup; and the
+. *   StateFIP-StateICP crosswalk.
+. *
+. * OUTPUT (in $data/county_unadjusted/):
+. *   county_panel_<year>_unadjusted.dta  - one per census year (1880-1930);
+. *                                         read by 1c
+. *
+. * Run via 00_master.do, or standalone.
+. *==============================================================================*
+. 
+. clear all
+java.lang.NoClassDefFoundError: Could not initialize class java.awt.Toolkit
+        at java.desktop/java.awt.EventQueue.invokeLater(EventQueue.java:1316)
+        at com.stata.Javacall.closeAllWindow(Javacall.java:214)
+        at com.stata.Javacall.discard(Javacall.java:48)
+Caused by: java.lang.ExceptionInInitializerError: Exception java.lang.UnsatisfiedLinkError: /usr/local/statanow19/util
+> ities/java/linux-x64/zulu-jdk21.0.7/lib/libawt_xawt.so: libXtst.so.6: cannot open shared object file: No such file o
+> r directory [in thread "main"]
+        at java.base/jdk.internal.loader.NativeLibraries.load(Native Method)
+        at java.base/jdk.internal.loader.NativeLibraries$NativeLibraryImpl.open(NativeLibraries.java:331)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:197)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:139)
+        at java.base/java.lang.ClassLoader.loadLibrary(ClassLoader.java:2418)
+        at java.base/java.lang.Runtime.load0(Runtime.java:852)
+        at java.base/java.lang.System.load(System.java:2025)
+        at java.base/jdk.internal.loader.NativeLibraries.load(Native Method)
+        at java.base/jdk.internal.loader.NativeLibraries$NativeLibraryImpl.open(NativeLibraries.java:331)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:197)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:139)
+        at java.base/jdk.internal.loader.NativeLibraries.findFromPaths(NativeLibraries.java:259)
+        at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:249)
+        at java.base/java.lang.ClassLoader.loadLibrary(ClassLoader.java:2427)
+        at java.base/java.lang.Runtime.loadLibrary0(Runtime.java:916)
+        at java.base/java.lang.System.loadLibrary(System.java:2063)
+        at java.desktop/java.awt.Toolkit$2.run(Toolkit.java:1384)
+        at java.desktop/java.awt.Toolkit$2.run(Toolkit.java:1382)
+        at java.base/java.security.AccessController.doPrivileged(AccessController.java:319)
+        at java.desktop/java.awt.Toolkit.loadLibraries(Toolkit.java:1381)
+        at java.desktop/java.awt.Toolkit.initStatic(Toolkit.java:1419)
+        at java.desktop/java.awt.Toolkit.<clinit>(Toolkit.java:1393)
+        ... 3 more
+a Java runtime exception occurred
+
+. set more off, perm
+(set more preference recorded)
+
+. 
+. * Project root. 00_master.do sets \$root for the full run; the line below also
+. * lets this file run on its own -- set it to the local path of the package.
+. if "$root" == "" global root "set-this-to-the-replication-package-path"
+
+. global rawdata  "$root/data/public"
+
+. global intmdata "$root/data/intermediate"
+
+. global data     "$root/data/clean"
+
+. global censusagg "$rawdata/census_aggregates"   // shipped county/national aggregates (CSV) built by build_documenta
+> tion/
+
+. cap mkdir "$intmdata"
+
+. cap mkdir "$data"
+
+. cap mkdir "$data/county_unadjusted"
+
+. 
+. 
+. *------------------------------------------------------------------------------*
+. * Convert the deposited census aggregates (CSV, open format -- JPE 1.4) to .dta
+. * in $intmdata so the year-by-year merges below read them unchanged. Built by the
+. * build_documentation/ stage and shipped as CSV by b16_ship_aggregates.do.
+. * case(preserve) keeps the original variable-name case. The confirm-file guard
+. * skips aggregates a given run does not have (e.g. there is no 1930 industry file).
+. *------------------------------------------------------------------------------*
+. 
+. foreach year in 1880 1890 1900 1910 1920 1930 {
+  2.     foreach f in IPUMS_`year'_county IPUMS_`year'_euroimm_county         ///
+>                  IPUMS_`year'_ind1950counts_county IPUMS_`year'_occ_county_m ///
+>                  IPUMS_`year'_population_county ICPSR_`year'_population_county {
+  3.         cap confirm file "$censusagg/`f'.csv"
+  4.         if !_rc {
+  5.             import delimited "$censusagg/`f'.csv", clear case(preserve)
+  6.             save "$intmdata/`f'.dta", replace
+  7.         }
+  8.     }
+  9. }
+(encoding automatically selected: ISO-8859-1)
+(61 vars, 2,552 obs)
+file /files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/data/intermediate/IPUMS_1880_county.dta saved
+(encoding automatically selected: ISO-8859-1)
+(51 vars, 2,525 obs)
+file
+    /files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/data/intermediate/IPUMS_1880_euroimm_county.dt
+    > a saved
+(encoding automatically selected: ISO-8859-1)
+(300 vars, 2,552 obs)
+file
+    /files/JPE-Medici-20241468/replication-package/MS20241468_Deposit/data/intermediate/IPUMS_1880_ind1950counts_cou
+    > nty.dta saved
+(encoding automatically selected: ISO-8859-1)
+--Break--
+r(1);
+
+end of do-file
+--Break--
+r(1);
+
+end of do-file
+
+--Break--
+r(1);
+
