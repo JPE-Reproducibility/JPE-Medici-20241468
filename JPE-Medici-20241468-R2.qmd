@@ -183,6 +183,17 @@ There are 16 `.do` files, one of which is the master.
 - Ran code as per README. Code broke because of missing packages `require`. Ran again.
 - Ran code as per README. Code broke because of missing packages `ivreg_ss`. Ran again.
 - Code ran as expected. Differences in output. See @sec-findings
+- Upon agreement with the author, run the do-files for the part with confidential data contained in `build_documentation/scripts`. 
+- After adjusting the root path in the do-file `MS20241468_Deposit/build_documentation/scripts/00_master_build.do` and `MS20241468_Deposit/build_documentation/scripts/09_master_build.do`, code broke with the error:
+
+```
+47. file U:/Downloads/Carlo Medici - MS20241468_JPE_Replication_20260708/MS20241468_Deposit/data/_raw_local/IPUMS/IPUMS_fullcount_1880.dta not found
+r(601);
+```
+
+- Adjusted the root path in the do-file `MS20241468_Deposit/build_documentation/scripts/build/b9_names.do` and code run without errors.
+
+- We interrupted the session after 60 minutes and continued the day after. In the continuing session, we checked the PID of the Stata window and uploaded the folders `MS20241468_Deposit/data/intermediate` and `MS20241468_Deposit/data/public` as specified by the `MS20241468_Deposit/build_documentation/README.md` to be the only one affected by those scripts.
 
 
 # Findings {#sec-findings}
@@ -543,17 +554,15 @@ Table G1
 
 | In-text numbers | Program | Line Number | Reproduced? |
 |---------------------|-----------------|-----------------|-----------------|
-| p.3 & 39: "in the absence of immigration, union density 1900-1920 would have been \~22% lower" (also \~31% for skilled) | 2c_results_main.do | 195–197 | No |
+| p.3 & 39: "in the absence of immigration, union density 1900-1920 would have been \~22% lower" (also \~31% for skilled) | 2c_results_main.do | 195–197 | Yes |
 
 - [ ] In-text numbers not verified.
 
 - [ ] There are no in-text numbers, or all in-text numbers stem from tables and figures.
 
-- [x] There are in-text numbers, but they are not identified in the code
+- [ ] There are in-text numbers, but they are not identified in the code
 
 ## Other Issues
-
-- It is possible that in the notes of Figure 1 there is a typo in the source of the immigrants inflow where it says 'Immigration Policy Institute' while it should be 'Migration Policy Institute' as cited in `README.md`
 
 - `README.md` did not enlist raw data but rather intermediate datasets and their sources. Even though they are not shipped in the package, it is important to cite them as if they were included.
 
