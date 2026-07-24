@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-07-21">
+<meta name="dcterms.date" content="2026-07-24">
 
 <title>JPE Replication Report</title>
 <style>
@@ -59,7 +59,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">July 21, 2026</p>
+      <p class="date">July 24, 2026</p>
     </div>
   </div>
   
@@ -748,7 +748,16 @@ ul.task-list li input[type="checkbox"] {
 <li>Ran code as per README. Code broke because of missing packages <code>center</code>. Ran again.</li>
 <li>Ran code as per README. Code broke because of missing packages <code>require</code>. Ran again.</li>
 <li>Ran code as per README. Code broke because of missing packages <code>ivreg_ss</code>. Ran again.</li>
-<li></li>
+<li>Code ran as expected. Differences in output. See <a href="#sec-findings" class="quarto-xref">Section&nbsp;9</a></li>
+<li>Upon agreement with the author, run the do-files for the part with confidential data contained in <code>build_documentation/scripts</code>.</li>
+<li>After adjusting the root path in the do-file <code>MS20241468_Deposit/build_documentation/scripts/00_master_build.do</code> and <code>MS20241468_Deposit/build_documentation/scripts/09_master_build.do</code>, code broke with the error:</li>
+</ul>
+<pre><code>47. file U:/Downloads/Carlo Medici - MS20241468_JPE_Replication_20260708/MS20241468_Deposit/data/_raw_local/IPUMS/IPUMS_fullcount_1880.dta not found
+r(601);</code></pre>
+<ul>
+<li><p>Adjusted the root path in the do-file <code>MS20241468_Deposit/build_documentation/scripts/build/b9_names.do</code> and code run without errors.</p></li>
+<li><p>We interrupted the session after 60 minutes and continued the day after. In the continuing session, we checked the PID of the Stata window and uploaded the folders <code>MS20241468_Deposit/data/intermediate</code> and <code>MS20241468_Deposit/data/public</code> as specified by the <code>MS20241468_Deposit/build_documentation/README.md</code> to be the only one affected by those scripts.</p></li>
+<li><p>After running the <code>b**</code> scripts, checked all the files generated using <code>KDiff3</code>. All dataset matched. No difference was detected.</p></li>
 </ul>
 </section>
 <section id="sec-findings" class="level1" data-number="9">
@@ -1948,21 +1957,20 @@ Figure&nbsp;25: Table G1
 <td>p.3 &amp; 39: “in the absence of immigration, union density 1900-1920 would have been ~22% lower” (also ~31% for skilled)</td>
 <td>2c_results_main.do</td>
 <td>195–197</td>
-<td>No</td>
+<td>Yes</td>
 </tr>
 </tbody>
 </table>
 <ul class="task-list">
 <li><p><label><input type="checkbox">In-text numbers not verified.</label></p></li>
 <li><p><label><input type="checkbox">There are no in-text numbers, or all in-text numbers stem from tables and figures.</label></p></li>
-<li><p><label><input type="checkbox" checked="">There are in-text numbers, but they are not identified in the code</label></p></li>
+<li><p><label><input type="checkbox">There are in-text numbers, but they are not identified in the code</label></p></li>
 </ul>
 </section>
 <section id="other-issues" class="level2" data-number="9.5">
 <h2 data-number="9.5" class="anchored" data-anchor-id="other-issues"><span class="header-section-number">9.5</span> Other Issues</h2>
 <ul>
-<li><p>It is possible that in the notes of Figure 1 there is a typo in the source of the immigrants inflow where it says ‘Immigration Policy Institute’ while it should be ‘Migration Policy Institute’ as cited in <code>README.md</code></p></li>
-<li><p><code>README.md</code> did not enlist raw data but rather intermediate datasets and their sources. Even though they are not shipped in the package, it is important to cite them as if they were included.</p></li>
+<li><code>README.md</code> did not enlist raw data but rather intermediate datasets and their sources. Even though they are not shipped in the package, it is important to cite them as if they were included.</li>
 </ul>
 </section>
 </section>

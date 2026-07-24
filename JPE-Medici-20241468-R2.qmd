@@ -195,6 +195,8 @@ r(601);
 
 - We interrupted the session after 60 minutes and continued the day after. In the continuing session, we checked the PID of the Stata window and uploaded the folders `MS20241468_Deposit/data/intermediate` and `MS20241468_Deposit/data/public` as specified by the `MS20241468_Deposit/build_documentation/README.md` to be the only one affected by those scripts.
 
+- After running the `b**` scripts, checked all the files generated using `KDiff3`. All dataset matched. No difference was detected.
+
 
 # Findings {#sec-findings}
 
@@ -278,9 +280,12 @@ Figure 4
 -   Figure A4: differences in some panels
 
 ::: {#fig-2 layout-ncol="2"}
-![Paper version](images/figureA4_original.png)
+![Paper version](images/figureA4a_original.png)
 
-![Replicated version](images/figureA4_replicated.png)
+![Replicated version](images/figureA4a_replicated.png)
+![Paper version](images/figureA4b_original.png)
+
+![Paper version](images/figureA4b_replicated.png)
 
 Figure A4
 :::
